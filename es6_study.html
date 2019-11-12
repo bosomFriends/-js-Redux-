@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>实现一个redux原理</title>
+	</head>
+	<body>
+	<div>
+		<button onClick=store.dispatch({type:'subbduce',n:2})>-</button>
+		<span id="spanCount">10</span>
+		<button onClick=store.dispatch({type:'additive',n:2})>+</button>
+	</div>
+		<script>
+			// 1.获取span这个元素
+			const spanCount = document.querySelector('#spanCount')
+			// 2.存储一个初始化的数据
+			const countState = {
+				count: 5
+			}
+			// 4.优化一下加减法的处理将加减法封装成一个函数里面进行处理
+			const handlerCountChange = (state,action) => {
+				if(!state) {
+					return countState
+				}
+				switch(action.type) {
+					case 'subbduce' :
+						return {
+							...state,
+							count: state.count - action.n
+						}
+					case 'additive' :
+						return {
+							...state,
+							count: state.count + action.n
+						}
+					default: 
+						return state
+				}
+			}
+
+			// 用一个函数存储处理数据的方法和数据的状态
+			const createStore = (handlerCountChange) => {
+				let state = null
+				const getState = () => state
+				let listeners = [];
+				const subscrible = (listener) => listeners.push(listener)
+				const dispatch = (action) => {
+					state = handlerCountChange(state,action)
+					listeners.forEach(listener => listener())
+					console.log(state)
+				}
+				dispatch({})
+				return {
+					getState,
+					dispatch,
+					subscrible
+				}
+			}
+			
+			const store = createStore(handlerCountChange)
+
+			// 渲染页面数据
+			const renderCount = () => {
+				spanCount.innerHTML = store.getState().count
+			}
+			renderCount()
+			store.subscrible(renderCount)
+		</script>
+	</body>
+</html>
